@@ -1,11 +1,22 @@
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import './App.css';
+import RocketsSearchFilter from './components/organisms/RocketsSearchFilter';
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
 function App() {
     return (
-        <>
-            <h1>Hello World</h1>
-            <p>Hi</p>
-        </>
+        <main>
+            <QueryClientProvider client={queryClient}>
+                <RocketsSearchFilter />
+            </QueryClientProvider>
+        </main>
     );
 }
 
