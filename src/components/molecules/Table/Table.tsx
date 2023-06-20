@@ -1,28 +1,24 @@
-import { useRef, useState, useEffect } from 'react';
-import { IRocket } from '../../organisms/RocketsSearchFilter/types';
+import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { StyledHeadingWrapper, StyledTableHeadingsWrapper, StyledTableRow, StyledTableWrapper } from './styles';
 
-interface IRocketData {
-    data: IRocket[];
+interface ITableProps {
+    filterData: [any[], Dispatch<SetStateAction<any[]>>];
 }
 
-const Table = ({ data, headingSortAction }: IRocketData) => {
-    const [activeHeading, setActiveHeading] = useState(null);
+const Table = ({ filterData }: ITableProps) => {
+    const [headings, setHeadings] = useState<string[]>([]);
 
-    const handleClick = (e) => {
-        const currentHeading = e.target.closest('.table-heading');
-        const currentIcon = currentHeading.querySelector('i');
+    const [filteredData, setFilteredData] = filterData;
 
-        const headings = document.querySelectorAll('.table-heading');
-        headings.forEach((heading) => {
-            const icon = heading?.querySelector('i');
+    const handleFilterClick = (e: React.MouseEvent<HTMLElement> | undefined) => {
+        const currentHeading = e
+            ? ((e?.target as HTMLElement).closest('.table-heading') as HTMLDivElement)
+            : (document.querySelector('.table-heading.active') as HTMLDivElement);
 
-            icon.classList.remove('fa-caret-up');
-            icon.classList.add('fa-caret-down');
-        });
-        // const targetColumn = currentHeading.getAttribute('data-target');
+        const targetColumn = currentHeading.getAttribute('data-target') as keyof any;
         const order = currentHeading.getAttribute('data-order');
-        order === 'ASC' ? currentHeading.setAttribute('data-order', 'DESC') : currentHeading.setAttribute('data-order', 'ASC');
+
+        const currentIcon = currentHeading.querySelector('i') as HTMLElement;
 
         if (order === 'ASC') {
             currentIcon.classList.add('fa-caret-up');
@@ -31,64 +27,106 @@ const Table = ({ data, headingSortAction }: IRocketData) => {
             currentIcon.classList.remove('fa-caret-up');
             currentIcon.classList.add('fa-caret-down');
         }
-        // order === 'ASC' ? currentIcon.classList.add('data-order', 'DESC') : currentHeading.setAttribute('data-order', 'ASC');
-        // console.log(currentHeading);
 
-        // const icon = currentHeading?.querySelector('i');
-        // console.log(icon);
+        order === 'ASC' ? currentHeading.setAttribute('data-order', 'DESC') : currentHeading.setAttribute('data-order', 'ASC');
 
-        // icon?.classList.remove('fa-caret-down');
-        // icon?.classList.add('fa-caret-up');
+        const headings = document.querySelectorAll('.table-heading');
 
-        // setActiveHeading(currentHeading);
+        headings.forEach((heading) => heading.classList.remove('active'));
 
-        // headingSortAction(activeHeading);
-        // setActiveHeading(e.target.closest('.table-heading'));
+        currentHeading.classList.add('active');
+
+        if (targetColumn !== null) {
+            const isStringArray = filteredData.every((item) => typeof item[targetColumn] === 'string');
+
+            switch (true) {
+                case isStringArray: {
+                    const filtered = filteredData?.sort((a, b) => {
+                        return order === 'DESC' ? b[targetColumn].localeCompare(a[targetColumn]) : a[targetColumn].localeCompare(b[targetColumn]);
+                    });
+
+                    setFilteredData([...(filtered as any[])]);
+                    break;
+                }
+                default: {
+                    const filtered = filteredData?.sort((a, b) => {
+                        return order === 'DESC'
+                            ? Number(b[targetColumn]) - Number(a[targetColumn])
+                            : Number(a[targetColumn]) - Number(b[targetColumn]);
+                    });
+
+                    setFilteredData([...(filtered as any[])]);
+                    break;
+                }
+            }
+        }
     };
 
-    // useEffect(() => {
-    //     console.log(activeHeading);
-    // }, [activeHeading]);
+    useEffect(() => {
+        if (filteredData) handleFilterClick(undefined);
+    }, []);
 
-    // console.log(activeHeading);
+    useEffect(() => {
+        if (filteredData && filteredData.length) {
+            const headingsKeys = Array.from(Object.keys(filteredData[0]));
+
+            const arrayContainsIdIndex = headingsKeys.findIndex((item) => item.indexOf('id') !== -1);
+
+            if (arrayContainsIdIndex !== -1) {
+                headingsKeys.splice(arrayContainsIdIndex, 1);
+                setHeadings(() => headingsKeys);
+            } else {
+                setHeadings(() => headingsKeys);
+            }
+        }
+    }, [filteredData]);
+
     return (
         <StyledTableWrapper>
             <StyledTableHeadingsWrapper className='table-heading-wrapper'>
-                <StyledHeadingWrapper className='table-heading' data-target={'rocket_name'} data-order={'ASC'} onClick={(e) => handleClick(e)}>
-                    <i className='fa-solid fa-caret-up'></i>
-                    <p>Rocket name</p>
-                </StyledHeadingWrapper>
-                <StyledHeadingWrapper className='table-heading' data-target={'diameter'} data-order={'ASC'} onClick={(e) => handleClick(e)}>
-                    <i className='fa-solid fa-caret-down'></i>
-                    <p>Diameter</p>
-                </StyledHeadingWrapper>
+                {headings?.map((heading, index) => {
+                    const fixedHeading = heading.charAt(0).toUpperCase() + heading.split('_').join(' ').slice(1);
 
-                <StyledHeadingWrapper className='table-heading' data-target={'height'} data-order={'ASC'} onClick={(e) => handleClick(e)}>
-                    <i className='fa-solid fa-caret-down'></i>
-                    <p>Height</p>
-                </StyledHeadingWrapper>
-
-                <StyledHeadingWrapper className='table-heading' data-target={'mass'} data-order={'ASC'} onClick={(e) => handleClick(e)}>
-                    <i className='fa-solid fa-caret-down'></i>
-                    <p>Mass</p>
-                </StyledHeadingWrapper>
-
-                <StyledHeadingWrapper className='table-heading' data-target={'cost_per_launch'} data-order={'ASC'} onClick={(e) => handleClick(e)}>
-                    <i className='fa-solid fa-caret-down'></i>
-                    <p>Cost per launch</p>
-                </StyledHeadingWrapper>
+                    return (
+                        <StyledHeadingWrapper
+                            key={index}
+                            className={`table-heading ${index === 0 ? 'active' : ''}`}
+                            data-target={heading}
+                            data-order={`DESC`}
+                            onClick={(e) => handleFilterClick(e)}
+                        >
+                            <i className={`fa-solid ${index === 0 ? 'fa-caret-up' : 'fa-caret-down'}`}></i>
+                            <p>{fixedHeading}</p>
+                        </StyledHeadingWrapper>
+                    );
+                })}
             </StyledTableHeadingsWrapper>
 
-            {data?.map((rocket) => {
-                return (
-                    <StyledTableRow key={rocket.id}>
-                        <li>{rocket.rocket_name}</li>
-                        <li>{rocket.diameter}m</li>
-                        <li>{rocket.height}m</li>
-                        <li>{rocket.mass}kg</li>
-                        <li>${rocket.cost_per_launch}</li>
-                    </StyledTableRow>
-                );
+            {filteredData?.map((item) => {
+                const mappedItemValues = headings.map((element, index) => {
+                    const weightVariables = ['weight', 'kg', 'mass'];
+                    const heightVariables = ['height', 'meter'];
+                    const priceVariables = ['price', 'cost'];
+
+                    const isWeight = weightVariables.some((variable) => element.includes(variable) && item[element]);
+
+                    const isHeight = heightVariables.some((variable) => element.includes(variable) && item[element]);
+                    const isPrice = priceVariables.some((variable) => element.includes(variable) && item[element]);
+
+                    const formattedNumber =
+                        isPrice && new Intl.NumberFormat('en', { notation: 'standard' }).format(item[element]).split(',').join(' ');
+
+                    return (
+                        <li key={index}>
+                            {isPrice && '$'}
+                            {formattedNumber ? formattedNumber : item[element as keyof any]}
+                            {isWeight && 'kg'}
+                            {isHeight && 'm'}
+                        </li>
+                    );
+                });
+
+                return <StyledTableRow key={item.id}>{mappedItemValues}</StyledTableRow>;
             })}
         </StyledTableWrapper>
     );
