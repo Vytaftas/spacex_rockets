@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 export interface IRocket {
     id: string;
     cost_per_launch: number;
@@ -11,4 +13,13 @@ export interface IRocket {
     mass?: {
         kg?: number;
     };
+}
+
+export interface IRocketMapped {
+    id: string;
+    cost_per_launch: number;
+    rocket_name: string;
+    height?: ReactNode;
+    diameter?: ReactNode;
+    mass?: ReactNode;
 }

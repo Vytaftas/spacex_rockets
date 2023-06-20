@@ -1,8 +1,17 @@
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import './App.css';
 import RocketsSearchFilter from './components/organisms/RocketsSearchFilter';
+import ShipsSearchFilter from './components/organisms/ShipsSearchFilter';
 
-const queryClient = new QueryClient({
+const rocketQueryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+        },
+    },
+});
+
+const productsQueryClient = new QueryClient({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: false,
@@ -13,8 +22,11 @@ const queryClient = new QueryClient({
 function App() {
     return (
         <main>
-            <QueryClientProvider client={queryClient}>
+            <QueryClientProvider client={rocketQueryClient}>
                 <RocketsSearchFilter />
+            </QueryClientProvider>
+            <QueryClientProvider client={productsQueryClient}>
+                <ShipsSearchFilter />
             </QueryClientProvider>
         </main>
     );
