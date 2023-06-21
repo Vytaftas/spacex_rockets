@@ -22,7 +22,7 @@ export const StyledInput = styled.input`
     outline: none;
 
     font-weight: 400;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 100%;
     letter-spacing: 0.5px;
 
@@ -30,5 +30,9 @@ export const StyledInput = styled.input`
 
     &::placeholder {
         color: var(--search-placeholder-text-clr);
+    }
+
+    @media (min-width: 768px) {
+        font-size: 16px;
     }
 `;

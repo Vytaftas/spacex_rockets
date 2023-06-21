@@ -1,7 +1,10 @@
 import SearchBar from '../../molecules/SearchBar';
 import Table from '../../molecules/Table';
-import API from '../../../api';
-import { StyledSearchFilter } from '../RocketsSearchFilter/styles';
+import API from '../../../shared/api';
+import Loader from '../../atoms/Loader';
+import Message from '../../atoms/Message';
+
+import { StyledSearchFilter } from './styles';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { IShip } from './types';
@@ -10,9 +13,9 @@ const ShipsSearchFilter = () => {
     const [filteredData, setFilteredData] = useState<IShip[]>([]);
 
     const getShipData = async () => {
-        const ships = (await API.getShips()) as IShip[];
+        const data = (await API.getShips()) as IShip[];
 
-        const shipsData = ships.map((ship) => {
+        const shipsData = data.map((ship) => {
             const { ship_id, ship_name, ship_type, weight_kg, year_built, home_port } = ship;
             return { id: ship_id, ship_name, ship_type, weight_kg, year_built, home_port };
         });
@@ -33,8 +36,14 @@ const ShipsSearchFilter = () => {
 
     return (
         <StyledSearchFilter>
-            <SearchBar searchBarName='SpaceX Ships' isLoading={isLoading} isError={isError} filterData={[data, filteredData, setFilteredData]} />
-            {isLoading ? 'LOADING' : isError ? 'API Error.. Try again later..' : data && <Table filterData={[filteredData, setFilteredData]} />}
+            <SearchBar searchBarName='SpaceX ships' isLoading={isLoading} isError={isError} filterData={[data, filteredData, setFilteredData]} />
+            {isLoading ? (
+                <Loader />
+            ) : isError ? (
+                <Message message={'API Error.. Try again later..'} />
+            ) : (
+                data && <Table filterData={[filteredData, setFilteredData]} />
+            )}
         </StyledSearchFilter>
     );
 };

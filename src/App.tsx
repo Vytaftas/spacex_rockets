@@ -1,7 +1,8 @@
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import './App.css';
 import RocketsSearchFilter from './components/organisms/RocketsSearchFilter';
 import ShipsSearchFilter from './components/organisms/ShipsSearchFilter';
+
+import './App.css';
 
 const rocketQueryClient = new QueryClient({
     defaultOptions: {

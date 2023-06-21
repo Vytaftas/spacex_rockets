@@ -1,6 +1,9 @@
 import SearchBar from '../../molecules/SearchBar';
 import Table from '../../molecules/Table';
-import API from '../../../api';
+import API from '../../../shared/api';
+import Loader from '../../atoms/Loader';
+import Message from '../../atoms/Message';
+
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { IRocket, IRocketMapped } from './types';
@@ -11,6 +14,7 @@ const RocketsSearchFilter = () => {
 
     const getRockets = async () => {
         const data = await API.getRockets();
+
         const rocketData = data.map((rocket: IRocket) => {
             return {
                 id: rocket.id,
@@ -38,8 +42,14 @@ const RocketsSearchFilter = () => {
 
     return (
         <StyledSearchFilter>
-            <SearchBar searchBarName='SpaceX Rockets' isLoading={isLoading} isError={isError} filterData={[data, filteredData, setFilteredData]} />
-            {isLoading ? 'LOADING' : isError ? 'API Error.. Try again later..' : data && <Table filterData={[filteredData, setFilteredData]} />}
+            <SearchBar searchBarName='SpaceX rockets' isLoading={isLoading} isError={isError} filterData={[data, filteredData, setFilteredData]} />
+            {isLoading ? (
+                <Loader />
+            ) : isError ? (
+                <Message message={'API Error.. Try again later..'} />
+            ) : (
+                data && <Table filterData={[filteredData, setFilteredData]} />
+            )}
         </StyledSearchFilter>
     );
 };
