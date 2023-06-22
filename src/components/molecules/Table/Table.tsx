@@ -1,11 +1,14 @@
 import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { StyledHeadingWrapper, StyledTableHeadingsWrapper, StyledTableRow, StyledTableWrapper } from './styles';
+import Message from '../../atoms/Message';
+import { FilterBy, filterRows } from '../../../shared/helpers/filterRows';
 
 interface ITableProps {
-    filterData: [any[], Dispatch<SetStateAction<any[]>>];
+    filterData: [object[], Dispatch<SetStateAction<object[]>>];
+    tableID: string;
 }
 
-const Table = ({ filterData }: ITableProps) => {
+const Table = ({ filterData, tableID }: ITableProps) => {
     const [headings, setHeadings] = useState<string[]>([]);
 
     const [filteredData, setFilteredData] = filterData;
@@ -13,22 +16,22 @@ const Table = ({ filterData }: ITableProps) => {
     const handleFilterClick = (e: React.MouseEvent<HTMLElement> | undefined) => {
         const currentHeading = e
             ? ((e?.target as HTMLElement).closest('.table-heading') as HTMLDivElement)
-            : (document.querySelector('.table-heading.active') as HTMLDivElement);
+            : (document.querySelector(`#${tableID} .table-heading.active`) as HTMLDivElement);
 
-        const targetColumn = currentHeading.getAttribute('data-target') as keyof any;
+        if (!currentHeading) return;
+
+        const targetColumn = currentHeading.getAttribute('data-target') as keyof object;
         const order = currentHeading.getAttribute('data-order');
 
         const currentIcon = currentHeading.querySelector('i') as HTMLElement;
 
-        if (order === 'ASC') {
+        if (order === FilterBy.ascending) {
             currentIcon.classList.add('fa-caret-up');
             currentIcon.classList.remove('fa-caret-down');
         } else {
             currentIcon.classList.remove('fa-caret-up');
             currentIcon.classList.add('fa-caret-down');
         }
-
-        order === 'ASC' ? currentHeading.setAttribute('data-order', 'DESC') : currentHeading.setAttribute('data-order', 'ASC');
 
         const headings = document.querySelectorAll('.table-heading');
 
@@ -37,34 +40,13 @@ const Table = ({ filterData }: ITableProps) => {
         currentHeading.classList.add('active');
 
         if (targetColumn !== null) {
-            const isStringArray = filteredData.every((item) => typeof item[targetColumn] === 'string');
+            const filtered = filterRows(filteredData, targetColumn, order as FilterBy);
 
-            switch (true) {
-                case isStringArray: {
-                    const filtered = filteredData?.sort((a, b) => {
-                        return order === 'DESC' ? b[targetColumn].localeCompare(a[targetColumn]) : a[targetColumn].localeCompare(b[targetColumn]);
-                    });
-
-                    setFilteredData([...(filtered as any[])]);
-                    break;
-                }
-                default: {
-                    const filtered = filteredData?.sort((a, b) => {
-                        return order === 'DESC'
-                            ? Number(b[targetColumn]) - Number(a[targetColumn])
-                            : Number(a[targetColumn]) - Number(b[targetColumn]);
-                    });
-
-                    setFilteredData([...(filtered as any[])]);
-                    break;
-                }
-            }
+            if (filtered) setFilteredData([...(filtered as object[])]);
         }
-    };
 
-    useEffect(() => {
-        if (filteredData) handleFilterClick(undefined);
-    }, []);
+        order === 'ASC' ? currentHeading.setAttribute('data-order', 'DESC') : currentHeading.setAttribute('data-order', 'ASC');
+    };
 
     useEffect(() => {
         if (filteredData && filteredData.length) {
@@ -81,6 +63,10 @@ const Table = ({ filterData }: ITableProps) => {
         }
     }, [filteredData]);
 
+    useEffect(() => {
+        if (filteredData && filteredData.length) handleFilterClick(undefined);
+    }, []);
+
     return (
         <StyledTableWrapper>
             <StyledTableHeadingsWrapper className='table-heading-wrapper'>
@@ -90,53 +76,59 @@ const Table = ({ filterData }: ITableProps) => {
                     return (
                         <StyledHeadingWrapper
                             key={index}
-                            className={`table-heading ${index === 0 ? 'active' : ''} ${
-                                index === 0 ? 'align-left' : index === headings.length - 1 ? 'align-right' : 'align-center'
-                            }`}
+                            className={`table-heading ${index === 0 ? 'active' : ''} ${index === 0 ? 'align-left' : 'align-right'}`}
                             data-target={heading}
-                            data-order={`DESC`}
+                            data-order={`ASC`}
                             onClick={(e) => handleFilterClick(e)}
                         >
                             <p>
                                 {fixedHeading}
-                                <i className={`fa-solid ${index === 0 ? 'fa-caret-up' : 'fa-caret-down'}`}></i>
+                                <i className={`fa-solid fa-caret-down`}></i>
                             </p>
                         </StyledHeadingWrapper>
                     );
                 })}
             </StyledTableHeadingsWrapper>
 
-            {filteredData?.map((item) => {
-                const mappedItemValues = headings.map((element, index) => {
-                    const fixedHeading = element.charAt(0).toUpperCase() + element.split('_').join(' ').slice(1);
-                    const weightVariables = ['weight', 'kg', 'mass'];
-                    const heightVariables = ['height', 'meter'];
-                    const priceVariables = ['price', 'cost'];
+            {!filteredData.length ? (
+                <Message message='No matches found..' fontSize='14px' />
+            ) : (
+                filteredData?.map((item) => {
+                    const mappedItemValues = headings.map((element, index) => {
+                        const fixedHeading = element.charAt(0).toUpperCase() + element.split('_').join(' ').slice(1);
 
-                    const isWeight = weightVariables.some((variable) => element.includes(variable) && item[element]);
+                        const weightVariables = ['weight', 'kg', 'mass'];
+                        const heightVariables = ['height', 'meter'];
+                        const priceVariables = ['price', 'cost'];
 
-                    const isHeight = heightVariables.some((variable) => element.includes(variable) && item[element]);
-                    const isPrice = priceVariables.some((variable) => element.includes(variable) && item[element]);
+                        const isWeight = weightVariables.some((variable) => element.includes(variable) && item[element as keyof object]);
+                        const isHeight = heightVariables.some((variable) => element.includes(variable) && item[element as keyof object]);
+                        const isPrice = priceVariables.some((variable) => element.includes(variable) && item[element as keyof object]);
 
-                    const formattedNumber =
-                        isPrice && new Intl.NumberFormat('en', { notation: 'standard' }).format(item[element]).split(',').join(' ');
+                        const formattedNumber =
+                            isPrice &&
+                            new Intl.NumberFormat('en', { notation: 'standard' })
+                                .format(item[element as keyof object])
+                                .split(',')
+                                .join(' ');
 
-                    return (
-                        <li key={index} className={`${index === 0 ? 'align-left' : index === headings.length - 1 ? 'align-right' : 'align-center'}`}>
-                            <div className='mobile-heading'>{fixedHeading}:</div>
+                        return (
+                            <li key={index} className={`${index === 0 ? 'align-left' : 'align-right'}`}>
+                                <div className='mobile-heading'>{fixedHeading}:</div>
 
-                            <div>
-                                {isPrice && '$'}
-                                {formattedNumber ? formattedNumber : item[element as keyof any]}
-                                {isWeight && 'kg'}
-                                {isHeight && 'm'}
-                            </div>
-                        </li>
-                    );
-                });
+                                <div>
+                                    {isPrice && '$'}
+                                    {formattedNumber ? formattedNumber : item[element as keyof object] ? item[element as keyof object] : '-'}
+                                    {isWeight && 'kg'}
+                                    {isHeight && 'm'}
+                                </div>
+                            </li>
+                        );
+                    });
 
-                return <StyledTableRow key={item.id}>{mappedItemValues}</StyledTableRow>;
-            })}
+                    return <StyledTableRow key={item.id}>{mappedItemValues}</StyledTableRow>;
+                })
+            )}
         </StyledTableWrapper>
     );
 };

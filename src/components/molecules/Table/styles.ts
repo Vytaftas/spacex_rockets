@@ -12,11 +12,9 @@ export const StyledTableWrapper = styled.div`
         .align-left {
             justify-content: start;
             text-align: left;
+            max-width: 185px;
         }
-        .align-center {
-            justify-content: center;
-            text-align: center;
-        }
+
         .align-right {
             justify-content: right;
             text-align: right;
@@ -55,6 +53,14 @@ export const StyledHeadingWrapper = styled.div`
         text-align: left;
         cursor: pointer;
         position: relative;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &.active p {
+        text-decoration: underline;
     }
 
     i {

@@ -5,12 +5,14 @@ import Loader from '../../atoms/Loader';
 import Message from '../../atoms/Message';
 
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { IRocket, IRocketMapped } from './types';
 import { StyledSearchFilter } from './styles';
 
+import { FilterBy, filterRows } from '../../../shared/helpers/filterRows';
+
 const RocketsSearchFilter = () => {
-    const [filteredData, setFilteredData] = useState<IRocketMapped[]>([]);
+    const [filteredData, setFilteredData] = useState<object[]>([]);
 
     const getRockets = async () => {
         const data = await API.getRockets();
@@ -26,6 +28,9 @@ const RocketsSearchFilter = () => {
             };
         });
 
+        filterRows(rocketData, 'rocket_name', FilterBy.descending);
+
+        setFilteredData(() => rocketData as IRocketMapped[]);
         return rocketData;
     };
 
@@ -36,19 +41,20 @@ const RocketsSearchFilter = () => {
 
     const { data, isError, isLoading } = query;
 
-    useEffect(() => {
-        setFilteredData(() => data as IRocketMapped[]);
-    }, [data]);
-
     return (
-        <StyledSearchFilter>
-            <SearchBar searchBarName='SpaceX rockets' isLoading={isLoading} isError={isError} filterData={[data, filteredData, setFilteredData]} />
+        <StyledSearchFilter id='rockets_filter'>
+            <SearchBar
+                searchBarName='SpaceX rockets'
+                isLoading={isLoading}
+                isError={isError}
+                filterData={[data as object[], filteredData, setFilteredData]}
+            />
             {isLoading ? (
                 <Loader />
             ) : isError ? (
                 <Message message={'API Error.. Try again later..'} />
             ) : (
-                data && <Table filterData={[filteredData, setFilteredData]} />
+                data && <Table tableID='rockets_filter' filterData={[filteredData, setFilteredData]} />
             )}
         </StyledSearchFilter>
     );
