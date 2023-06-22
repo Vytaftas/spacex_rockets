@@ -90,13 +90,17 @@ const Table = ({ filterData }: ITableProps) => {
                     return (
                         <StyledHeadingWrapper
                             key={index}
-                            className={`table-heading ${index === 0 ? 'active' : ''}`}
+                            className={`table-heading ${index === 0 ? 'active' : ''} ${
+                                index === 0 ? 'align-left' : index === headings.length - 1 ? 'align-right' : 'align-center'
+                            }`}
                             data-target={heading}
                             data-order={`DESC`}
                             onClick={(e) => handleFilterClick(e)}
                         >
-                            <i className={`fa-solid ${index === 0 ? 'fa-caret-up' : 'fa-caret-down'}`}></i>
-                            <p>{fixedHeading}</p>
+                            <p>
+                                {fixedHeading}
+                                <i className={`fa-solid ${index === 0 ? 'fa-caret-up' : 'fa-caret-down'}`}></i>
+                            </p>
                         </StyledHeadingWrapper>
                     );
                 })}
@@ -104,6 +108,7 @@ const Table = ({ filterData }: ITableProps) => {
 
             {filteredData?.map((item) => {
                 const mappedItemValues = headings.map((element, index) => {
+                    const fixedHeading = element.charAt(0).toUpperCase() + element.split('_').join(' ').slice(1);
                     const weightVariables = ['weight', 'kg', 'mass'];
                     const heightVariables = ['height', 'meter'];
                     const priceVariables = ['price', 'cost'];
@@ -117,11 +122,15 @@ const Table = ({ filterData }: ITableProps) => {
                         isPrice && new Intl.NumberFormat('en', { notation: 'standard' }).format(item[element]).split(',').join(' ');
 
                     return (
-                        <li key={index}>
-                            {isPrice && '$'}
-                            {formattedNumber ? formattedNumber : item[element as keyof any]}
-                            {isWeight && 'kg'}
-                            {isHeight && 'm'}
+                        <li key={index} className={`${index === 0 ? 'align-left' : index === headings.length - 1 ? 'align-right' : 'align-center'}`}>
+                            <div className='mobile-heading'>{fixedHeading}:</div>
+
+                            <div>
+                                {isPrice && '$'}
+                                {formattedNumber ? formattedNumber : item[element as keyof any]}
+                                {isWeight && 'kg'}
+                                {isHeight && 'm'}
+                            </div>
                         </li>
                     );
                 });

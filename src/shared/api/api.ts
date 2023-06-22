@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { IRocket } from '../components/organisms/RocketsSearchFilter/types';
-import { IShip } from '../components/organisms/ShipsSearchFilter/types';
+import { IRocket } from '../../components/organisms/RocketsSearchFilter/types';
+import { IShip } from '../../components/organisms/ShipsSearchFilter/types';
 
 const httpClient = axios.create({
     baseURL: 'https://api.spacexdata.com/v3',

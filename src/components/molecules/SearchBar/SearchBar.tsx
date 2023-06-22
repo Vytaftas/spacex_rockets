@@ -1,8 +1,12 @@
-import { ICONS } from '../../../assets/icons';
 import Input from '../../atoms/Input';
 import { StyledSearchBarLogo, StyledSearchBarResults, StyledSearchBarWrapper } from './styles';
 import { ChangeEvent } from 'react';
 import { IRocketMapped } from '../../organisms/RocketsSearchFilter/types';
+
+const ICONS = {
+    search: <i className='fa-solid fa-magnifying-glass'></i>,
+    searchRight: <i className='fa-solid fa-magnifying-glass-arrow-right'></i>,
+};
 
 interface ISearchBarProps {
     isLoading: boolean;
