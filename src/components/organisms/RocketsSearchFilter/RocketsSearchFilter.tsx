@@ -14,6 +14,8 @@ import { FilterBy, filterRows } from '../../../shared/helpers/filterRows';
 const RocketsSearchFilter = () => {
     const [filteredData, setFilteredData] = useState<object[]>([]);
 
+    const activeFilter = 'cost_per_launch';
+
     const getRockets = async () => {
         const data = await API.getRockets();
 
@@ -28,7 +30,7 @@ const RocketsSearchFilter = () => {
             };
         });
 
-        filterRows(rocketData, 'rocket_name', FilterBy.descending);
+        filterRows(rocketData, activeFilter, FilterBy.descending);
 
         setFilteredData(() => rocketData as IRocketMapped[]);
         return rocketData;
@@ -54,7 +56,7 @@ const RocketsSearchFilter = () => {
             ) : isError ? (
                 <Message message={'API Error.. Try again later..'} />
             ) : (
-                data && <Table tableID='rockets_filter' filterData={[filteredData, setFilteredData]} />
+                data && <Table showIdColumn activeFilter={activeFilter} tableID='rockets_filter' filterData={[filteredData, setFilteredData]} />
             )}
         </StyledSearchFilter>
     );
