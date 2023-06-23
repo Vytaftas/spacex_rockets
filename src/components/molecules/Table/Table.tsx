@@ -6,9 +6,11 @@ import { FilterBy, filterRows } from '../../../shared/helpers/filterRows';
 interface ITableProps {
     filterData: [object[], Dispatch<SetStateAction<object[]>>];
     tableID: string;
+    showIdColumn?: boolean;
+    activeFilter: string;
 }
 
-const Table = ({ filterData, tableID }: ITableProps) => {
+const Table = ({ filterData, tableID, showIdColumn, activeFilter }: ITableProps) => {
     const [headings, setHeadings] = useState<string[]>([]);
 
     const [filteredData, setFilteredData] = filterData;
@@ -18,6 +20,7 @@ const Table = ({ filterData, tableID }: ITableProps) => {
             ? ((e?.target as HTMLElement).closest('.table-heading') as HTMLDivElement)
             : (document.querySelector(`#${tableID} .table-heading.active`) as HTMLDivElement);
 
+        console.log(currentHeading);
         if (!currentHeading) return;
 
         const targetColumn = currentHeading.getAttribute('data-target') as keyof object;
@@ -33,7 +36,7 @@ const Table = ({ filterData, tableID }: ITableProps) => {
             currentIcon.classList.add('fa-caret-down');
         }
 
-        const headings = document.querySelectorAll('.table-heading');
+        const headings = document.querySelectorAll(`#${tableID} .table-heading`);
 
         headings.forEach((heading) => heading.classList.remove('active'));
 
@@ -54,14 +57,14 @@ const Table = ({ filterData, tableID }: ITableProps) => {
 
             const arrayContainsIdIndex = headingsKeys.findIndex((item) => item.indexOf('id') !== -1);
 
-            if (arrayContainsIdIndex !== -1) {
+            if (arrayContainsIdIndex !== -1 && !showIdColumn) {
                 headingsKeys.splice(arrayContainsIdIndex, 1);
                 setHeadings(() => headingsKeys);
             } else {
                 setHeadings(() => headingsKeys);
             }
         }
-    }, [filteredData]);
+    }, [filteredData, showIdColumn]);
 
     useEffect(() => {
         if (filteredData && filteredData.length) handleFilterClick(undefined);
@@ -72,11 +75,13 @@ const Table = ({ filterData, tableID }: ITableProps) => {
             <StyledTableHeadingsWrapper className='table-heading-wrapper'>
                 {headings?.map((heading, index) => {
                     const fixedHeading = heading.charAt(0).toUpperCase() + heading.split('_').join(' ').slice(1);
+                    const filterActive = activeFilter === heading ? 'active' : '';
+                    const textAlign = index === 0 ? 'align-left' : 'align-right';
 
                     return (
                         <StyledHeadingWrapper
                             key={index}
-                            className={`table-heading ${index === 0 ? 'active' : ''} ${index === 0 ? 'align-left' : 'align-right'}`}
+                            className={`table-heading ${filterActive} ${textAlign}`}
                             data-target={heading}
                             data-order={`ASC`}
                             onClick={(e) => handleFilterClick(e)}
@@ -91,7 +96,7 @@ const Table = ({ filterData, tableID }: ITableProps) => {
             </StyledTableHeadingsWrapper>
 
             {!filteredData.length ? (
-                <Message message='No matches found..' fontSize='14px' />
+                <Message message='No matches found!' fontSize='14px' />
             ) : (
                 filteredData?.map((item) => {
                     const mappedItemValues = headings.map((element, index) => {

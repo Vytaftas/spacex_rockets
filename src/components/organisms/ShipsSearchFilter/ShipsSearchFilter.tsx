@@ -14,6 +14,8 @@ import { FilterBy, filterRows } from '../../../shared/helpers/filterRows';
 const ShipsSearchFilter = () => {
     const [filteredData, setFilteredData] = useState<object[]>([]);
 
+    const activeFilter = 'ship_name';
+
     const getShipData = async () => {
         const data = (await API.getShips()) as IShip[];
 
@@ -22,7 +24,7 @@ const ShipsSearchFilter = () => {
             return { id: ship_id, ship_name, ship_type, weight_kg, year_built, home_port };
         });
 
-        filterRows(shipsData, 'ship_name', FilterBy.descending);
+        filterRows(shipsData, activeFilter, FilterBy.descending);
 
         setFilteredData(() => shipsData);
         return shipsData;
@@ -48,7 +50,7 @@ const ShipsSearchFilter = () => {
             ) : isError ? (
                 <Message message={'API Error.. Try again later..'} />
             ) : (
-                filteredData && <Table tableID='ships_filter' filterData={[filteredData, setFilteredData]} />
+                filteredData && <Table activeFilter={activeFilter} tableID='ships_filter' filterData={[filteredData, setFilteredData]} />
             )}
         </StyledSearchFilter>
     );

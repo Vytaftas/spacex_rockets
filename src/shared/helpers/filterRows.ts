@@ -20,8 +20,8 @@ export const filterRows: FilterRowsType = (data, columnName, filterBy?) => {
         default: {
             const filtered = data?.sort((a, b) => {
                 return filterBy === FilterBy.ascending
-                    ? Number(b[columnName as keyof object]) - Number(a[columnName as keyof object])
-                    : Number(a[columnName as keyof object]) - Number(b[columnName as keyof object]);
+                    ? Number(a[columnName as keyof object]) - Number(b[columnName as keyof object])
+                    : Number(b[columnName as keyof object]) - Number(a[columnName as keyof object]);
             });
 
             return filtered;
