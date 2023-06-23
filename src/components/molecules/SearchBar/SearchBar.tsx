@@ -1,6 +1,6 @@
 import Input from '../../atoms/Input';
 import { StyledSearchBarLogo, StyledSearchBarResults, StyledSearchBarWrapper } from './styles';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import { IRocketMapped } from '../../organisms/RocketsSearchFilter/types';
 
 const ICONS = {
@@ -11,7 +11,7 @@ const ICONS = {
 interface ISearchBarProps {
     isLoading: boolean;
     isError: boolean;
-    filterData: any;
+    filterData: [object[], object[], Dispatch<SetStateAction<object[]>>];
     searchBarName: string;
 }
 
